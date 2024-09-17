@@ -36,6 +36,8 @@ defmodule SetLocale.Mixfile do
   defp deps do
     [
       {:phoenix, ">1.3.0"},
+      {:plug, "~> 1.8"},
+      {:plug_cowboy, "~> 2.7"},
       {:gettext, "~>0.14"},
       {:earmark, "~>1.3.1", only: :dev},
       {:ex_doc, ">0.13.1", only: :dev},
