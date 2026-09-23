@@ -4,7 +4,7 @@ defmodule SetLocale.Mixfile do
   def project do
     [
       app: :set_locale,
-      version: "0.4.3",
+      version: "0.4.4",
       description:
         "A Phoenix Plug to help with supporting I18n routes (http://www.example.org/de-at/foo/bar/az). Will also set Gettext to the requested locale used in the url when supported by your Gettext.",
       package: package(),
@@ -32,13 +32,9 @@ defmodule SetLocale.Mixfile do
 
   defp package do
     [
-      maintainers: ["Gerard de Brieder"],
       licenses: ["WTFPL"],
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
-      links: %{
-        "GitHub" => "https://github.com/smeevil/set_locale",
-        "Docs" => "http://smeevil.github.io/set_locale/"
-      }
+      links: %{"GitHub" => "https://github.com/jackjoe/set_locale"}
     ]
   end
 end

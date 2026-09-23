@@ -1,3 +1,6 @@
+## 0.4.4 (2026-09-23)
+- Point the package links to jackjoe/set_locale and remove the `maintainers` field, which Hex no longer reads
+
 ## 0.4.3 (2026-09-23)
 - Run `mix format`
 
