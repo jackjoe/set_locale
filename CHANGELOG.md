@@ -1,3 +1,41 @@
+## 0.4.7 (2026-09-23)
+- Update the README: install from GitHub, current Phoenix naming, the full fallback chain including the `Referer` header, the locale name format, and examples checked against the code
+
+## 0.4.6 (2026-09-23)
+- The deprecation warning for the legacy list config (`plug SetLocale, [MyApp.Gettext, "en-gb"]`) is now always printed, also in test. The plug no longer calls `Mix.env()`, which is not available in releases
+
+## 0.4.5 (2026-09-23)
+- The plug no longer requires fetched cookies: it skips the cookie lookup without a `cookie_key` and fetches cookies itself when one is set. It used to raise when placed before `fetch_session`
+
+## 0.4.4 (2026-09-23)
+- Point the package links to jackjoe/set_locale and remove the `maintainers` field, which Hex no longer reads
+
+## 0.4.3 (2026-09-23)
+- Run `mix format`
+
+## 0.4.2 (2026-09-23)
+- Remove `excoveralls`: nothing posts to Coveralls. Use `mix test --cover` for a local coverage report
+
+## 0.4.1 (2026-09-23)
+- Allow gettext 1.0 (`~> 0.14 or ~> 1.0`). The previous `~> 0.14` requirement excluded 1.0
+- Test against gettext 1.0.2: define the test backend with `Gettext.Backend` and move the fixtures to `LC_MESSAGES/*.po`
+
+## 0.4.0 (2026-09-23)
+- `plug_cowboy` is no longer a dependency. Apps that only got it through set_locale must add it themselves (or use Bandit)
+- Develop and test against Phoenix 1.8. The `phoenix` requirement is unchanged
+
+## 0.3.6 (2026-09-23)
+- Remove the unused `earmark` dev dependency and bump `ex_doc` to 0.40, which uses `earmark_parser` itself
+
+## 0.3.5 (2026-09-23)
+- Replace the deprecated `use Mix.Config` with `import Config`
+
+## 0.3.4 (2026-09-23)
+- Drop the `locale` query param when redirecting, so `GET /?locale=nl` redirects to `/nl` instead of `/nl?locale=nl`. Other query params are kept in order
+
+## 0.3.3 (2026-09-23)
+- Fix tests for Plug 1.8+: pass `locale` as a route path param instead of a GET param, which the Plug test adapter now encodes into the query string
+
 ## 0.3.2 (2026-09-23)
 - Replace the explicit `applications` list with `extra_applications` so runtime apps are inferred from deps. Fixes the `Phoenix.Controller.redirect/2 is undefined` warning on Elixir 1.15+
 - Refresh mix.lock and bump hackney/ssl_verify_fun so the test deps compile on Elixir 1.15+

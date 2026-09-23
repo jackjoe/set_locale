@@ -9,18 +9,16 @@ defmodule SetLocale do
   def init(opts) when is_tuple(hd(opts)), do: struct!(Config, opts)
 
   def init([gettext, default_locale]) do
-    unless Mix.env() == :test do
-      IO.warn(
-        ~S(
+    IO.warn(
+      ~S(
         This config style has been deprecated for set_locale. Please update the old style config:
         plug SetLocale, [MyApp.Gettext, "en-gb"]
 
         to the new config:
-        plug SetLocale, gettext: MyApp.Gettext, default_locale: "en-gb", cookie_key: "preferred_locale"]
+        plug SetLocale, gettext: MyApp.Gettext, default_locale: "en-gb", cookie_key: "preferred_locale"
       ),
-        Macro.Env.stacktrace(__ENV__)
-      )
-    end
+      Macro.Env.stacktrace(__ENV__)
+    )
 
     %Config{gettext: gettext, default_locale: default_locale}
   end
@@ -38,6 +36,7 @@ defmodule SetLocale do
       if Enum.member?(config.additional_locales, requested_locale),
         do: Gettext.put_locale(config.gettext, config.default_locale),
         else: Gettext.put_locale(config.gettext, requested_locale)
+
       assign(conn, :locale, requested_locale)
     else
       path = rewrite_path(conn, requested_locale, config)
@@ -136,12 +135,27 @@ defmodule SetLocale do
     Phoenix.Controller.redirect(conn, to: path)
   end
 
-  defp get_redirect_path(%{query_string: query_string}, path) when query_string != "",
-    do: path <> "?#{query_string}"
+  defp get_redirect_path(%{query_string: query_string}, path) when query_string != "" do
+    case strip_locale_param(query_string) do
+      "" -> path
+      query_string -> path <> "?#{query_string}"
+    end
+  end
 
   defp get_redirect_path(_conn, path), do: path
 
-  defp get_locale_from_cookie(conn, config), do: conn.cookies[config.cookie_key]
+  # The redirect path already carries the locale, so a `locale` query param is redundant.
+  defp strip_locale_param(query_string) do
+    query_string
+    |> String.split("&")
+    |> Enum.reject(&(&1 == "locale" or String.starts_with?(&1, "locale=")))
+    |> Enum.join("&")
+  end
+
+  defp get_locale_from_cookie(_conn, %{cookie_key: nil}), do: nil
+
+  # Fetch cookies here so the plug does not depend on running after `fetch_session`.
+  defp get_locale_from_cookie(conn, config), do: fetch_cookies(conn).cookies[config.cookie_key]
 
   defp get_locale_from_header(conn, gettext) do
     conn
