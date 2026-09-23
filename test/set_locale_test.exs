@@ -5,7 +5,7 @@ defmodule SetLocaleTest do
   import Phoenix.ConnTest
 
   defmodule MyGettext do
-    use Gettext, otp_app: :set_locale
+    use Gettext.Backend, otp_app: :set_locale
   end
 
   @cookie_key "locale"

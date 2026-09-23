@@ -1,3 +1,7 @@
+## 0.4.1 (2026-09-23)
+- Allow gettext 1.0 (`~> 0.14 or ~> 1.0`). The previous `~> 0.14` requirement excluded 1.0
+- Test against gettext 1.0.2: define the test backend with `Gettext.Backend` and move the fixtures to `LC_MESSAGES/*.po`
+
 ## 0.4.0 (2026-09-23)
 - `plug_cowboy` is no longer a dependency. Apps that only got it through set_locale must add it themselves (or use Bandit)
 - Develop and test against Phoenix 1.8. The `phoenix` requirement is unchanged
