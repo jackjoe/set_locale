@@ -13,12 +13,12 @@ Add `set_locale` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:set_locale, "~> 0.4.0", github: "jackjoe/set_locale"}
+    {:set_locale, "~> 0.5.0", github: "jackjoe/set_locale"}
   ]
 end
 ```
 
-Mix checks the version requirement against the version on `master`, so a breaking release such as 0.5.0 fails to compile instead of arriving silently with `mix deps.update`.
+Mix checks the version requirement against the version on `master`, so a breaking release such as 0.6.0 fails to compile instead of arriving silently with `mix deps.update`.
 
 ## Setup
 
