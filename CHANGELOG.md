@@ -1,3 +1,6 @@
+## 0.4.2 (2026-09-23)
+- Remove `excoveralls`: nothing posts to Coveralls. Use `mix test --cover` for a local coverage report
+
 ## 0.4.1 (2026-09-23)
 - Allow gettext 1.0 (`~> 0.14 or ~> 1.0`). The previous `~> 0.14` requirement excluded 1.0
 - Test against gettext 1.0.2: define the test backend with `Gettext.Backend` and move the fixtures to `LC_MESSAGES/*.po`
