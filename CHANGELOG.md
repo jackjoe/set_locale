@@ -1,3 +1,6 @@
+## 0.5.0 (2026-09-23)
+- Breaking: remove the list config `plug SetLocale, [MyApp.Gettext, "en-gb"]`, deprecated since 0.2.x. Use keyword options: `plug SetLocale, gettext: MyApp.Gettext, default_locale: "en-gb"`. The list form now raises an `ArgumentError` that shows this
+
 ## 0.4.7 (2026-09-23)
 - Update the README: install from GitHub, current Phoenix naming, the full fallback chain including the `Referer` header, the locale name format, and examples checked against the code
 

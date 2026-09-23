@@ -8,19 +8,14 @@ defmodule SetLocale do
 
   def init(opts) when is_tuple(hd(opts)), do: struct!(Config, opts)
 
-  def init([gettext, default_locale]) do
-    IO.warn(
-      ~S(
-        This config style has been deprecated for set_locale. Please update the old style config:
-        plug SetLocale, [MyApp.Gettext, "en-gb"]
+  def init(opts) do
+    raise ArgumentError, """
+    SetLocale expects keyword options, got: #{inspect(opts)}
 
-        to the new config:
-        plug SetLocale, gettext: MyApp.Gettext, default_locale: "en-gb", cookie_key: "preferred_locale"
-      ),
-      Macro.Env.stacktrace(__ENV__)
-    )
+    Configure it as:
 
-    %Config{gettext: gettext, default_locale: default_locale}
+        plug SetLocale, gettext: MyApp.Gettext, default_locale: "en-gb"
+    """
   end
 
   def call(
