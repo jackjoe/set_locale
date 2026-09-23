@@ -1,3 +1,6 @@
+## 0.3.6 (2026-09-23)
+- Remove the unused `earmark` dev dependency and bump `ex_doc` to 0.40, which uses `earmark_parser` itself
+
 ## 0.3.5 (2026-09-23)
 - Replace the deprecated `use Mix.Config` with `import Config`
 
