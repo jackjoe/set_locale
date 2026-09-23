@@ -1,3 +1,6 @@
+## 0.4.3 (2026-09-23)
+- Run `mix format`
+
 ## 0.4.2 (2026-09-23)
 - Remove `excoveralls`: nothing posts to Coveralls. Use `mix test --cover` for a local coverage report
 
