@@ -1,95 +1,109 @@
 # SetLocale
-![](https://img.shields.io/hexpm/v/set_locale.svg) ![](https://img.shields.io/hexpm/dt/set_locale.svg) ![](https://img.shields.io/hexpm/dw/set_locale.svg) ![](https://img.shields.io/coveralls/smeevil/set_locale.svg) ![](https://img.shields.io/github/issues/smeevil/set_locale.svg) ![](https://img.shields.io/github/issues-pr/smeevil/set_locale.svg) ![](https://semaphoreci.com/api/v1/smeevil/currency_formatter/branches/master/shields_badge.svg)
 
+A Phoenix plug for locale-prefixed URLs such as `https://www.example.org/nl/foo/bar`.
 
-This phoenix plug will help you with I18n url paths.
-It can extract the preffered locale from the browsers accept-language header and redirect if an url without locale has been given.
-It will extract the locale from the url and check if that is valid and supported. If so it will assign it to ```conn.assigns.locale``` and set ```Gettext``` to that locale as well.
-If it is not supported it will redirect to the default locale.
+SetLocale reads the locale from the URL. If your Gettext backend supports it, the plug assigns it to `conn.assigns.locale` and sets it as the Gettext locale. If the URL has no locale, or one that isn't supported, the plug redirects to the same path with a supported locale prefix.
 
- You might also be interested in [ecto_translate](https://github.com/smeevil/ecto_translate) which can help you with returning translated values of your Ecto data attributes.
-## Examples
+This repository continues [smeevil/set_locale](https://github.com/smeevil/set_locale) by Gerard de Brieder. The `set_locale` package on Hex stops at 0.2.9, so install newer versions from GitHub.
 
-Given that you define your default language to be "en" :
+## Installation
 
-When someone uses the url : ```http://www.example.org``` they will be redirected to ```http://www.example.org/en/```
+Add `set_locale` to your dependencies in `mix.exs`:
 
-When someone uses the url : ```http://www.example.org/foo/bar/baz``` they will be redirected to ```http://www.example.org/en/foo/bar/baz```
+```elixir
+def deps do
+  [
+    {:set_locale, "~> 0.4.0", github: "jackjoe/set_locale"}
+  ]
+end
+```
 
-When someone uses the url : ```http://www.example.org/en-gb/foo/bar/baz``` they will be redirected to ```http://www.example.org/en/foo/bar/baz```
-
-When someone uses an unsupported locale in the url they will be redirected to the default one: ```http://www.example.org/de-de/foo/bar/baz``` they will be redirected to ```http://www.example.org/en/foo/bar/baz```
-
-When someone uses a url with no locale prefix, and their browser contains an accept-language string that contains a supported locale : ```http://www.example.org/foo/bar/baz``` they will be redirected to ```http://www.example.org/nl-nl/foo/bar/baz```
-
-## Fallback chain and precedence
-
-The current precedence and fallback chain is now :
-
-- locale in url (i.e. /nl-nl/)
-- cookie
-- request headers accept-language
-- default locale from config
+Mix checks the version requirement against the version on `master`, so a breaking release such as 0.5.0 fails to compile instead of arriving silently with `mix deps.update`.
 
 ## Setup
 
-Update your router.ex to include the plug and scope your routes with /:locale
+Add the plug to your browser pipeline and put your routes in a `/:locale` scope:
 
 ```elixir
-defmodule MyApp.Router do
-  use MyApp.Web, :router
+defmodule MyAppWeb.Router do
+  use MyAppWeb, :router
 
   pipeline :browser do
     plug :accepts, ["html"]
-    ...
-    # cookie_key and additional_locales are optional
-    plug(SetLocale,
-      gettext: MyApp.Gettext,
+    plug :fetch_session
+    # ...
+
+    plug SetLocale,
+      gettext: MyAppWeb.Gettext,
       default_locale: "en",
-      cookie_key: "project_locale",
+      # optional
+      cookie_key: "preferred_locale",
       additional_locales: ["fr", "es"]
-    )
   end
 
-  ...
-
-  scope "/", MyApp do
+  scope "/", MyAppWeb do
     pipe_through :browser
-    # you need this entry to support the default root without a locale, it will never be called
+
+    # "/" needs a route. SetLocale always redirects it, so this action never runs.
     get "/", PageController, :dummy
   end
 
-  scope "/:locale", MyApp do
+  scope "/:locale", MyAppWeb do
     pipe_through :browser
+
     get "/", PageController, :index
-    ...
+    # ...
   end
 end
 ```
 
 ### Options
-- gettext: mandatory
-- default_locale: mandatory, used as last step in fallback chain
-- cookie_key: optional, if given the value of the cookie is part of the fallback chain
-- additional_locales: optional, if given it allows to whitelist locales that are not defined via Gettext. Possible scenario: You want to use Gettext and some SaaS localization service (e.g. http://bablic.com/) in parallel. Whitelisting these additional languages allows you to have proper routing for the locales and trigger the wanted JS behaviour depending on the assigned locale in your templates.
 
-## Installation
+- `gettext` (required): your Gettext backend.
+- `default_locale` (required): the locale to use when no other source gives a supported one.
+- `cookie_key` (optional): the name of a cookie that holds the user's preferred locale. SetLocale only reads this cookie; your app has to set it.
+- `additional_locales` (optional): locales to accept in URLs even though Gettext doesn't know them, for example when a translation service handles them in the browser. For these locales `conn.assigns.locale` holds the URL locale and Gettext is set to `default_locale`.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+## Examples
 
-  1. Add `set_locale` to your list of dependencies in `mix.exs`:
+With `default_locale: "en"`, Gettext locales `en` and `nl`, and no cookie:
 
-    ```elixir
-    def deps do
-      [{:set_locale, "~> 0.2.1"}]
-    end
-    ```
+| Request | Result |
+|---|---|
+| `/` | redirect to `/en` |
+| `/foo/bar` | redirect to `/en/foo/bar` |
+| `/nl/foo/bar` | no redirect, `conn.assigns.locale` is `"nl"` |
+| `/nl-be/foo/bar` | redirect to `/nl/foo/bar` |
+| `/de-de/foo/bar` | redirect to `/en/foo/bar` |
+| `/foo/bar` with `Accept-Language: nl-BE` | redirect to `/nl/foo/bar` |
+| `/foo/bar` with `Referer: https://www.example.org/nl/about` | redirect to `/nl/foo/bar` |
+| `/foo?page=2` | redirect to `/en/foo?page=2` |
+| `/?locale=nl` | redirect to `/nl` |
 
-  2. Ensure `set_locale` is started before your application:
+Redirects keep the query string, except for a `locale` parameter.
 
-    ```elixir
-    def application do
-      [applications: [:set_locale]]
-    end
-    ```
+## How the locale is chosen
 
+A supported locale in the URL is used as is. If only its base language is supported, SetLocale redirects to that: `/nl-be/foo` becomes `/nl/foo` when you support `nl` but not `nl-be`.
+
+Otherwise SetLocale checks these sources in order:
+
+1. the cookie named by `cookie_key`
+2. the locale prefix of the `Referer` URL, the page the user came from
+3. the `Accept-Language` header; for an entry such as `nl-BE` it also tries `nl`
+4. `default_locale`
+
+The cookie and the `Referer` are taken as they are. If the first of them that holds a locale holds an unsupported one, SetLocale uses `default_locale` without checking the later sources.
+
+## Locale names
+
+URL locales are two lowercase letters, optionally followed by a hyphen and two more: `nl`, `en-gb`. SetLocale compares them with `Gettext.known_locales/1`, so your Gettext locale directories need the same names: `priv/gettext/en-gb`, not `priv/gettext/en_GB`. A path segment in another format isn't treated as a locale, so `/en_GB/foo` redirects to `/en/en_GB/foo`.
+
+Gettext has no plural rules for hyphenated names such as `en-gb`, and raises `Gettext.Plural.UnknownLocaleError` when it compiles a `.po` file for one without a `Plural-Forms` header. Add the header to those files:
+
+```
+msgid ""
+msgstr ""
+"Language: en-gb\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+```

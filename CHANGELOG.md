@@ -1,3 +1,6 @@
+## 0.4.7 (2026-09-23)
+- Update the README: install from GitHub, current Phoenix naming, the full fallback chain including the `Referer` header, the locale name format, and examples checked against the code
+
 ## 0.4.6 (2026-09-23)
 - The deprecation warning for the legacy list config (`plug SetLocale, [MyApp.Gettext, "en-gb"]`) is now always printed, also in test. The plug no longer calls `Mix.env()`, which is not available in releases
 
