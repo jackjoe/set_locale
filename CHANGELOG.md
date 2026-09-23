@@ -1,3 +1,6 @@
+## 0.3.5 (2026-09-23)
+- Replace the deprecated `use Mix.Config` with `import Config`
+
 ## 0.3.4 (2026-09-23)
 - Drop the `locale` query param when redirecting, so `GET /?locale=nl` redirects to `/nl` instead of `/nl?locale=nl`. Other query params are kept in order
 
