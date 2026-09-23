@@ -29,6 +29,7 @@ defmodule SetLocale.Mixfile do
       applications: [
         :gettext,
         :logger,
+        :phoenix,
         :plug
       ]
     ]
