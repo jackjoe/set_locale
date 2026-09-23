@@ -1,3 +1,7 @@
+## 0.4.0 (2026-09-23)
+- `plug_cowboy` is no longer a dependency. Apps that only got it through set_locale must add it themselves (or use Bandit)
+- Develop and test against Phoenix 1.8. The `phoenix` requirement is unchanged
+
 ## 0.3.6 (2026-09-23)
 - Remove the unused `earmark` dev dependency and bump `ex_doc` to 0.40, which uses `earmark_parser` itself
 

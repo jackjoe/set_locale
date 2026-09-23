@@ -2,7 +2,7 @@ defmodule SetLocaleTest do
   use ExUnit.Case
   doctest SetLocale
 
-  use Phoenix.ConnTest
+  import Phoenix.ConnTest
 
   defmodule MyGettext do
     use Gettext, otp_app: :set_locale
