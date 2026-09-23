@@ -1,3 +1,6 @@
+## 0.4.5 (2026-09-23)
+- The plug no longer requires fetched cookies: it skips the cookie lookup without a `cookie_key` and fetches cookies itself when one is set. It used to raise when placed before `fetch_session`
+
 ## 0.4.4 (2026-09-23)
 - Point the package links to jackjoe/set_locale and remove the `maintainers` field, which Hex no longer reads
 

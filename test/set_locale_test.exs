@@ -213,6 +213,25 @@ defmodule SetLocaleTest do
     end
   end
 
+  describe "when cookies are not fetched" do
+    test "without cookie_key, it should redirect without reading cookies" do
+      conn =
+        Phoenix.ConnTest.build_conn(:get, "/foo/bar/baz", %{})
+        |> SetLocale.call(@default_options)
+
+      assert redirected_to(conn) == "/#{@default_locale}/foo/bar/baz"
+    end
+
+    test "with cookie_key, it should fetch the cookies itself" do
+      conn =
+        Phoenix.ConnTest.build_conn(:get, "/foo/bar/baz", %{})
+        |> Plug.Conn.put_req_header("cookie", "#{@cookie_key}=nl")
+        |> SetLocale.call(@default_options_with_cookie)
+
+      assert redirected_to(conn) == "/nl/foo/bar/baz"
+    end
+  end
+
   describe "when an unsupported locale is given and there is no cookie" do
     test "it redirects to a prefix with default locale" do
       conn =

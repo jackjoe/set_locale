@@ -154,7 +154,10 @@ defmodule SetLocale do
     |> Enum.join("&")
   end
 
-  defp get_locale_from_cookie(conn, config), do: conn.cookies[config.cookie_key]
+  defp get_locale_from_cookie(_conn, %{cookie_key: nil}), do: nil
+
+  # Fetch cookies here so the plug does not depend on running after `fetch_session`.
+  defp get_locale_from_cookie(conn, config), do: fetch_cookies(conn).cookies[config.cookie_key]
 
   defp get_locale_from_header(conn, gettext) do
     conn
