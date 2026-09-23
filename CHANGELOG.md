@@ -1,3 +1,13 @@
+## 0.3.2 (2026-09-23)
+- Replace the explicit `applications` list with `extra_applications` so runtime apps are inferred from deps. Fixes the `Phoenix.Controller.redirect/2 is undefined` warning on Elixir 1.15+
+- Refresh mix.lock and bump hackney/ssl_verify_fun so the test deps compile on Elixir 1.15+
+
+## 0.3.1 (2024-09-17)
+- Add `:plug` to the runtime applications
+
+## 0.3.0 (2024-09-17)
+- Add `plug` and `plug_cowboy` as explicit dependencies
+
 ## 0.2.9 (2020-06-15)
 - Bump requirements
 
