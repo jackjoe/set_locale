@@ -136,10 +136,22 @@ defmodule SetLocale do
     Phoenix.Controller.redirect(conn, to: path)
   end
 
-  defp get_redirect_path(%{query_string: query_string}, path) when query_string != "",
-    do: path <> "?#{query_string}"
+  defp get_redirect_path(%{query_string: query_string}, path) when query_string != "" do
+    case strip_locale_param(query_string) do
+      "" -> path
+      query_string -> path <> "?#{query_string}"
+    end
+  end
 
   defp get_redirect_path(_conn, path), do: path
+
+  # The redirect path already carries the locale, so a `locale` query param is redundant.
+  defp strip_locale_param(query_string) do
+    query_string
+    |> String.split("&")
+    |> Enum.reject(&(&1 == "locale" or String.starts_with?(&1, "locale=")))
+    |> Enum.join("&")
+  end
 
   defp get_locale_from_cookie(conn, config), do: conn.cookies[config.cookie_key]
 

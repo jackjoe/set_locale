@@ -342,7 +342,17 @@ defmodule SetLocaleTest do
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options)
 
-      assert redirected_to(conn) == "/nl?locale=nl"
+      assert redirected_to(conn) == "/nl"
+    end
+
+    test "when a root path is requested, it should drop only the locale from the query string" do
+      conn =
+        Phoenix.ConnTest.build_conn(:get, "/?foo=bar&locale=nl&baz=true")
+        |> Plug.Conn.fetch_query_params()
+        |> Plug.Conn.fetch_cookies()
+        |> SetLocale.call(@default_options)
+
+      assert redirected_to(conn) == "/nl?foo=bar&baz=true"
     end
 
     test "with sibling: it should only assign it" do
