@@ -1,3 +1,6 @@
+## 0.4.6 (2026-09-23)
+- The deprecation warning for the legacy list config (`plug SetLocale, [MyApp.Gettext, "en-gb"]`) is now always printed, also in test. The plug no longer calls `Mix.env()`, which is not available in releases
+
 ## 0.4.5 (2026-09-23)
 - The plug no longer requires fetched cookies: it skips the cookie lookup without a `cookie_key` and fetches cookies itself when one is set. It used to raise when placed before `fetch_session`
 

@@ -2,6 +2,7 @@ defmodule SetLocaleTest do
   use ExUnit.Case
   doctest SetLocale
 
+  import ExUnit.CaptureIO
   import Phoenix.ConnTest
 
   defmodule MyGettext do
@@ -31,12 +32,16 @@ defmodule SetLocaleTest do
 
   describe "init" do
     test "it supports a legacy config" do
-      assert SetLocale.init([MyGettext, "en-gb"]) == %SetLocale.Config{
+      {config, warning} = with_io(:stderr, fn -> SetLocale.init([MyGettext, "en-gb"]) end)
+
+      assert config == %SetLocale.Config{
                gettext: SetLocaleTest.MyGettext,
                default_locale: "en-gb",
                cookie_key: nil,
                additional_locales: []
              }
+
+      assert warning =~ "This config style has been deprecated"
     end
 
     test "it enforces gettext key" do

@@ -9,18 +9,16 @@ defmodule SetLocale do
   def init(opts) when is_tuple(hd(opts)), do: struct!(Config, opts)
 
   def init([gettext, default_locale]) do
-    unless Mix.env() == :test do
-      IO.warn(
-        ~S(
+    IO.warn(
+      ~S(
         This config style has been deprecated for set_locale. Please update the old style config:
         plug SetLocale, [MyApp.Gettext, "en-gb"]
 
         to the new config:
-        plug SetLocale, gettext: MyApp.Gettext, default_locale: "en-gb", cookie_key: "preferred_locale"]
+        plug SetLocale, gettext: MyApp.Gettext, default_locale: "en-gb", cookie_key: "preferred_locale"
       ),
-        Macro.Env.stacktrace(__ENV__)
-      )
-    end
+      Macro.Env.stacktrace(__ENV__)
+    )
 
     %Config{gettext: gettext, default_locale: default_locale}
   end
