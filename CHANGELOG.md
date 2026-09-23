@@ -1,3 +1,6 @@
+## 0.3.3 (2026-09-23)
+- Fix tests for Plug 1.8+: pass `locale` as a route path param instead of a GET param, which the Plug test adapter now encodes into the query string
+
 ## 0.3.2 (2026-09-23)
 - Replace the explicit `applications` list with `extra_applications` so runtime apps are inferred from deps. Fixes the `Phoenix.Controller.redirect/2 is undefined` warning on Elixir 1.15+
 - Refresh mix.lock and bump hackney/ssl_verify_fun so the test deps compile on Elixir 1.15+

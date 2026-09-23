@@ -22,6 +22,13 @@ defmodule SetLocaleTest do
     additional_locales: ["fr", "es"]
   }
 
+  # Mimics a `/:locale/...` route: the router merges the path param into params,
+  # it never ends up in the query string.
+  defp conn_with_locale(path, locale) do
+    conn = Plug.Conn.fetch_query_params(Phoenix.ConnTest.build_conn(:get, path))
+    %{conn | path_params: %{"locale" => locale}, params: Map.put(conn.params, "locale", locale)}
+  end
+
   describe "init" do
     test "it supports a legacy config" do
       assert SetLocale.init([MyGettext, "en-gb"]) == %SetLocale.Config{
@@ -209,7 +216,7 @@ defmodule SetLocaleTest do
   describe "when an unsupported locale is given and there is no cookie" do
     test "it redirects to a prefix with default locale" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/de-at/foo/bar/baz", %{"locale" => "de-at"})
+        conn_with_locale("/de-at/foo/bar/baz", "de-at")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options)
 
@@ -220,7 +227,7 @@ defmodule SetLocaleTest do
   describe "when an unsupported locale is given but there is a cookie" do
     test "it redirects to a prefix with cookie locale" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/de-at/foo/bar/baz", %{"locale" => "de-at"})
+        conn_with_locale("/de-at/foo/bar/baz", "de-at")
         |> Plug.Conn.put_resp_cookie(@cookie_key, "nl")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options_with_cookie)
@@ -244,7 +251,7 @@ defmodule SetLocaleTest do
   describe "when the locale is no locale, but a part of the url and there is no cookie" do
     test "it redirects to a prefix with default locale" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/foo/bar", %{"locale" => "foo"})
+        conn_with_locale("/foo/bar", "foo")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options)
 
@@ -253,7 +260,7 @@ defmodule SetLocaleTest do
 
     test "when headers contain referer with valid locale in the path, it should use redirect to that locale if supported" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/foo/bar", %{"locale" => "foo"})
+        conn_with_locale("/foo/bar", "foo")
         |> Plug.Conn.fetch_cookies()
         |> Plug.Conn.put_req_header("referer", "/nl/origin")
         |> SetLocale.call(@default_options)
@@ -273,7 +280,7 @@ defmodule SetLocaleTest do
 
     test "when headers contain referer without valid locale in the path, it should ignore it and use the default" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/foo/bar", %{"locale" => "foo"})
+        conn_with_locale("/foo/bar", "foo")
         |> Plug.Conn.fetch_cookies()
         |> Plug.Conn.put_req_header("referer", "/origin")
         |> SetLocale.call(@default_options)
@@ -283,7 +290,7 @@ defmodule SetLocaleTest do
 
     test "when headers contain accept-language, it should redirect to the header locale if supported" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/foo/bar", %{"locale" => "foo"})
+        conn_with_locale("/foo/bar", "foo")
         |> Plug.Conn.fetch_cookies()
         |> Plug.Conn.put_req_header("accept-language", "de, en-gb;q=0.8, nl;q=0.9, en;q=0.7")
         |> SetLocale.call(@default_options)
@@ -293,7 +300,7 @@ defmodule SetLocaleTest do
 
     test "when headers contain accept-language, but none is accepted, it should redirect to the default locale" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/foo/bar", %{"locale" => "foo"})
+        conn_with_locale("/foo/bar", "foo")
         |> Plug.Conn.fetch_cookies()
         |> Plug.Conn.put_req_header("accept-language", "de, fr;q=0.9")
         |> SetLocale.call(@default_options)
@@ -305,7 +312,7 @@ defmodule SetLocaleTest do
   describe "when the locale is no locale, but a part of the url and there is a cookie" do
     test "it redirects to a prefix with cookie locale" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/foo/bar", %{"locale" => "foo"})
+        conn_with_locale("/foo/bar", "foo")
         |> Plug.Conn.put_resp_cookie(@cookie_key, "nl")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options_with_cookie)
@@ -315,7 +322,7 @@ defmodule SetLocaleTest do
 
     test "when headers contain accept-language, it should redirect to the cookie locale" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/foo/bar", %{"locale" => "foo"})
+        conn_with_locale("/foo/bar", "foo")
         |> Plug.Conn.put_resp_cookie(@cookie_key, "nl")
         |> Plug.Conn.fetch_cookies()
         |> Plug.Conn.put_req_header("accept-language", "de, en-gb;q=0.8, en;q=0.7")
@@ -328,16 +335,19 @@ defmodule SetLocaleTest do
   describe "when an existing locale is given" do
     test "when a root path is requested, it should redirect to the requested locale" do
       assert Gettext.get_locale(MyGettext) == "en"
-      conn = Phoenix.ConnTest.build_conn(:get, "/", %{"locale" => "nl"})
-             |> Plug.Conn.fetch_cookies()
-             |> SetLocale.call(@default_options)
 
-      assert redirected_to(conn) == "/nl"
+      conn =
+        Phoenix.ConnTest.build_conn(:get, "/?locale=nl")
+        |> Plug.Conn.fetch_query_params()
+        |> Plug.Conn.fetch_cookies()
+        |> SetLocale.call(@default_options)
+
+      assert redirected_to(conn) == "/nl?locale=nl"
     end
 
     test "with sibling: it should only assign it" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/en-gb/foo/bar/baz", %{"locale" => "en-gb"})
+        conn_with_locale("/en-gb/foo/bar/baz", "en-gb")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options)
 
@@ -348,7 +358,7 @@ defmodule SetLocaleTest do
 
     test "without sibling: it should only assign it" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/nl/foo/bar/baz", %{"locale" => "nl"})
+        conn_with_locale("/nl/foo/bar/baz", "nl")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options)
 
@@ -359,7 +369,7 @@ defmodule SetLocaleTest do
 
     test "it should fallback to parent language when sibling does not exist, ie. nl-be should use nl" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/nl-be/foo/bar/baz", %{"locale" => "nl-be"})
+        conn_with_locale("/nl-be/foo/bar/baz", "nl-be")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options)
 
@@ -368,9 +378,7 @@ defmodule SetLocaleTest do
 
     test "should keep query strings as is" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/de-at/foo/bar?foo=bar&baz=true", %{
-          "locale" => "de-at"
-        })
+        conn_with_locale("/de-at/foo/bar?foo=bar&baz=true", "de-at")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options)
 
@@ -380,7 +388,7 @@ defmodule SetLocaleTest do
     test "it should allow non Gettext locales that are whitelisted via additional_locales option
           and assign it, but should set Gettext to the default_locale" do
       conn =
-        Phoenix.ConnTest.build_conn(:get, "/fr/foo/bar/baz", %{"locale" => "fr"})
+        conn_with_locale("/fr/foo/bar/baz", "fr")
         |> Plug.Conn.fetch_cookies()
         |> SetLocale.call(@default_options_with_additional_locales)
 
